@@ -25,5 +25,5 @@ image:../images/smartplug_screenshot1.png[width=256]
 image:../images/smartplug_screenshot2.png[width=256]
 
 '''
-=== Configuration
+=== Konfiguration
 include::configuration.asciidoc[]
