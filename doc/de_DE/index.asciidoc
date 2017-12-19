@@ -6,7 +6,7 @@ Pour rendre à Cesar ce qui est à Cesar, ce plugin est inspiré du plugin mPowe
 === Description
 Ce plugin permet de contrôler les prises tplink wifi HS100 et HS110. Le widget permet de voir toutes les infos :
 
-Pour les HS100
+Für den HS100
 - Etat
 - Durée depuis l'allumage
 - Mode nuit
