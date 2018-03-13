@@ -1,5 +1,5 @@
 ---
-langs: [fr_FR,en_US,es_ES]
+langs: [fr_FR]
 baseurl: "/"
 sass:
   sass_dir: assets/css
@@ -17,9 +17,9 @@ exclude:
 - vendor
 plugins:
 - jekyll-seo-tag
-title: "Documentation Jeedom-Plugins-Extra"
-description: "Ceci est la documentation du plugin de la team Jeedom-Plugins-Extra"
-author: "Jeedom-Plugins-Extra"
+title: "Documentation plugin Wifi Smartplug"
+description: "Ceci est la documentation du plugin Wifi Smartplug gérant les modules HS100 et HS110"
+author: "BoBeponge"
 image: https://avatars1.githubusercontent.com/u/36200380?s=200&v=4
 social:
   name: Jeedom-Plugins-Extra

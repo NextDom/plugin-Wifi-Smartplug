@@ -1,21 +1,56 @@
-Configuration
-===
-Le plugin offre la possibilité de créer automatiquement les commandes réceptionnées. Pour cela démarrez le daemon, attendez que les premières trames arrivent puis rendez vous sur Plugin / Protocoles Domotiques / Téléinfo.
-Vous devriez voir apparaitre un objet avec un ID.
+==== Configuration du plugin:
 
->Il est possible de désactiver la création automatique des nouveaux compteurs.
->
->![teleinfo51](../images/teleinformation_blocage.png)
+.. Installation/Création
 
-Cliquez sur l'objet et sélectionnez "Création automatique des commandes" en haut à droite, enfin sauvegardez. A partir de ce moment toutes les commandes reçu et non reconnu seront ajoutée automatiquement.
+Afin d'utiliser le plugin, vous devez le télécharger, l'installer et l'activer comme tout plugin Jeedom.
 
-![teleinfo52](../images/teleinformation_objet.png)
+Rendez vous dans le menu plugins/energie, vous y trouverez le plugin Smarplug :
 
-![teleinfo52](../images/teleinformation_commandes_auto.png)
+image:../images/smartplug-config.png[width=380]
 
-Vous pouvez également créer votre appareil manuellement :
--   Créez votre nouvel appareil en cliquant sur Ajouter
--   Ajoutez les commandes que vous souhaitez récupérer en cliquant sur le bouton vert "Commande"
--   Vous pouvez également afficher des statistiques de consommation (Aujourd'hui / Hier / Mois en cours / Mois dernier) en cliquant sur le bouton "Ajouter une statistique"
--   Renseignez le nom affiché dans Jeedom, le Sous-Type en fonction de l'information qui sera récupérée, la donnée à récupérer et enfin les paramètres associés.
--   Cliquez sur sauvegarder.
+Ensuite vous arriverez sur la page qui listera vos Smartplugs
+
+image:../images/smartplug-list-device.png[width=380]
+
+Cliquez sur le bouton Ajouter si vous voulez rajouter un Smartplug manuellement
+
+Sur cette page vous trouverez trois sections :
+
+![smartplug_screenshot11](../images/smartplug-config2.png)
+
+... Général
+
+Vous trouverez dans cette section toutes les configurations jeedom. A savoir
+le nom de votre équippement, l'objet auquel vous voulez l'associer, la catégorie,
+si vous voulez que l'équipement soit actif ou non , et enfin si vous voulez qu'il soit visible sur le dashboard.
+
+... Configuration
+
+Cette section est une des plus importantes elle permet de choisir le modèle, l'ip de votre wifi smarplug.
+
+... Tableau de Commandes
+
+Ici vous trouverez la liste de toutes les commandes et infos disponibles
+
+Toutes ces commandes sont disponibles via scénarios et via le dashboard
+
+
+==== Le widget :
+
+- PRISE HS110
+
+![smartplug_screenshot12](../images/hs110-1.png)
+![smartplug_screenshot13](../images/hs110-2.png)
+
+Le widget se décompose en deux parties dans le cas de la prise HS110 ( remonté de la consommation):
+
+* Par défaut vous voyez votre wifi smarplug  avec la puissance,le voltage et la duréé depuis son activation. Un clic sur la smartplug permet de changer son état. En bas a gauche vous avez un boutons permettant de passer la led du smartplug en mode nuit.
+* Lorsque vous cliquez sur le bouton en bas à droite vous avez la consommation du jours
+
+- PRISE HS100
+
+![smartplug_screenshot14](../images/hs100.png)
+
+Le widget se décompose en une seul partie dans le cas de la prise HS110 ( remonté de la consommation):
+
+* Par défaut vous voyez votre wifi smarplug  duréé depuis son activation. Un clic sur la smartplug permet de changer son état. En bas a gauche vous avez un boutons permettant de passer la led du smartplug en mode nuit.
