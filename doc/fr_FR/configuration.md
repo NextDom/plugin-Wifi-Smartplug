@@ -6,11 +6,11 @@ Afin d'utiliser le plugin, vous devez le télécharger, l'installer et l'activer
 
 Rendez vous dans le menu plugins/energie, vous y trouverez le plugin Smarplug :
 
-image:../images/smartplug-config.png[width=380]
+![smartplug_screenshot15](../images/smartplug-config.png)
 
 Ensuite vous arriverez sur la page qui listera vos Smartplugs
 
-image:../images/smartplug-list-device.png[width=380]
+![smartplug_screenshot16](../images/smartplug-list-device.png)
 
 Cliquez sur le bouton Ajouter si vous voulez rajouter un Smartplug manuellement
 
