@@ -16,38 +16,41 @@
  * along with Jeedom. If not, see <http://www.gnu.org/licenses/>.
  */
 
+/* * ***************************Includes********************************* */
 require_once dirname(__FILE__) . '/../../../../core/php/core.inc.php';
 
-class wifismartplug extends eqLogic
-{
-
+class wifismartplug extends eqLogic {
+    /*     * *************************Attributs****************************** */
     public static $_widgetPossibility = array('custom' => true);
 
-    /* Fonction exécutée automatiquement toutes les minutes par Jeedom */
 
-    public static function cron($_eqlogic_id = null)
-    {
+    /*     * ***********************Methode static*************************** */
 
-        if ($_eqlogic_id !== null) {
-            $eqLogics = array(eqLogic::byId($_eqlogic_id));
-        } else {
-            $eqLogics = eqLogic::byType('wifismartplug');
-        }
+     /* Fonction exécutée automatiquement toutes les minutes par Jeedom */
+      public static function cron($_eqlogic_id = null) {
 
-        foreach ($eqLogics as $smartplug) {
-            if ($smartplug->getIsEnable() == 1) {
-                log::add('wifismartplug', 'debug', 'Pull Cron pour wifismartplug');
-                $smartplugID = $smartplug->getId();
-                log::add('wifismartplug', 'debug', 'ID : ' . $smartplug->getId());
-                log::add('wifismartplug', 'debug', 'Name : ' . $smartplug->getName());
+          if($_eqlogic_id !== null){
+              $eqLogics = array(eqLogic::byId($_eqlogic_id));
+          }else{
+              $eqLogics = eqLogic::byType('wifismartplug');
+          }
 
-                /* ilfaudrait tester sur le model afin d'appeler par la suite la bonne methode pour les infos */
+          foreach($eqLogics as $smartplug) {
+              if ($smartplug->getIsEnable() == 1) {
+                  log::add('wifismartplug', 'debug', 'Pull Cron pour wifismartplug' );
+                  $smartplugID = $smartplug->getId();
+                  log::add('wifismartplug', 'debug', 'ID : '.$smartplug->getId() );
+                   log::add('wifismartplug', 'debug', 'Name : '.$smartplug->getName() );
 
-                $smartpluginfo = $smartplug->getsmartplugInfo();
-            }
-        }
-        return;
-    }
+                  /* ilfaudrait tester sur le model afin d'appeler par la suite la bonne methode pour les infos */
+
+                $smartpluginfo = $smartplug->getSmartPlugInfo();
+              }
+          }
+
+          return;
+      }
+
 
     /*
      * Fonction exécutée automatiquement toutes les heures par Jeedom
@@ -63,154 +66,168 @@ class wifismartplug extends eqLogic
       }
      */
 
-    public function getsmartplugInfo()
-    {
 
-        try {
+  public function getSmartPlugInfo() {
 
-            $changed = false;
+      try {
 
-            $ipsmartplug    = $this->getConfiguration('addr');
-            $modelsmartplug = $this->getConfiguration('model');
+          $changed = false;
 
-            /* first get relay status, nightmode, mac address alias currentruntime from info */
-            $command = '/usr/bin/python ' . dirname(__FILE__) . '/../../3rparty/smartplug.py  -t ' . $ipsmartplug . ' -c info';
-            $result  = trim(shell_exec($command));
-            log::add('wifismartplug', 'debug', 'retour [info]');
-            log::add('wifismartplug', 'debug', $command);
-            log::add('wifismartplug', 'debug', $result);
+          $ipsmartplug = $this->getConfiguration('addr');
+          $modelsmartplug = $this->getConfiguration('model');
 
-            /* decode reponse info */
-            $jsoninfo  = json_decode($result, true);
-            $state     = $jsoninfo['system']['get_sysinfo']['relay_state'];
-            $runtTime  = $jsoninfo['system']['get_sysinfo']['on_time'];
-            $mac       = $jsoninfo['system']['get_sysinfo']['mac'];
-            $alias     = $jsoninfo['system']['get_sysinfo']['alias'];
-            $nightmode = $jsoninfo['system']['get_sysinfo']['led_off'];
+          /* first get relay status, nightmode, mac address alias currentruntime from info */
+           $command = '/usr/bin/python ' .dirname(__FILE__).'/../../3rparty/smartplug.py  -t ' . $ipsmartplug . ' -c info';
+           $result=trim(shell_exec($command));
+           log::add('wifismartplug','debug','retour [info]');
+           log::add('wifismartplug','debug',$command);
+           log::add('wifismartplug','debug',$result);
 
-            log::add('wifismartplug', 'debug', 'state : ' . $state);
-            log::add('wifismartplug', 'debug', 'mac : ' . $mac);
-            log::add('wifismartplug', 'debug', 'alias : ' . $alias);
-            log::add('wifismartplug', 'debug', 'runTime : ' . $runtTime);
-            log::add('wifismartplug', 'debug', 'nightmode : ' . $nightmode);
+          /* decode reponse info */
+           $jsoninfo = json_decode($result,true);
+           $state =$jsoninfo['system']['get_sysinfo']['relay_state'];
+           $runtTime =$jsoninfo['system']['get_sysinfo']['on_time'];
+           $mac =$jsoninfo['system']['get_sysinfo']['mac'];
+           $alias =$jsoninfo['system']['get_sysinfo']['alias'];
+           $nightmode =$jsoninfo['system']['get_sysinfo']['led_off'];
 
-            /* set etat */
-            $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(), 'etat');
-            if (is_object($statecmd)) {
-                if ($statecmd->execCmd() === null || $statecmd->execCmd() != $state) {
-                    $changed = true;
-                    $statecmd->setCollectDate('');
-                    $statecmd->event($state);
-                }
-            }
-
-            /* set nightemod */
-            $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(), 'nightmode');
-            if (is_object($statecmd)) {
-                if ($statecmd->execCmd() === null || $statecmd->execCmd() != $nightmode) {
-                    $changed = true;
-                    $statecmd->setCollectDate('');
-                    $statecmd->event($nightmode);
-                }
-            }
-
-            /* set currentRunTime */
-            $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(), 'currentRunTime');
-            if (is_object($statecmd)) {
-                if ($statecmd->execCmd() === null || $statecmd->execCmd() != $runtTime) {
-                    $changed = true;
-                    $statecmd->setCollectDate('');
-                    $statecmd->event($runtTime);
-                }
-            }
-
-            /* set macAddress */
-            $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(), 'macAddress');
-            if (is_object($statecmd)) {
-                if ($statecmd->execCmd() === null || $statecmd->execCmd() != $mac) {
-                    $changed = true;
-                    $statecmd->setCollectDate('');
-                    $statecmd->event($mac);
-                }
-            }
-
-            /* set alias */
-            $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(), 'alias');
-            if (is_object($statecmd)) {
-                if ($statecmd->execCmd() === null || $statecmd->execCmd() != $alias) {
-                    $changed = true;
-                    $statecmd->setCollectDate('');
-                    $statecmd->event($alias);
-                }
-            }
-
-            /* ajout commande pour modele HS110 */
-
-            $model = $this->getConfiguration('model');
-            if ($model == 'HS110') {
-
-                /* -- set daily consumption -- */
-                $command  = '/usr/bin/python ' . dirname(__FILE__) . '/../../3rparty/smartplug.py  -t ' . $ipsmartplug . ' -c dailyConsumption';
-                $result   = trim(shell_exec($command));
-                log::add('wifismartplug', 'debug', 'retour [dailyConso]');
-                log::add('wifismartplug', 'debug', $command);
-                log::add('wifismartplug', 'debug', $result);
-                $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(), 'dailyConso');
-                if (is_object($statecmd)) {
-                    if ($statecmd->execCmd() === null || $statecmd->execCmd() != $retourcommand) {
-                        $statecmd->setCollectDate('');
-                        $statecmd->event(true);
-                    }
-                }
-
-                /* power and voltage from */
-                $command = '/usr/bin/python ' . dirname(__FILE__) . '/../../3rparty/smartplug.py  -t ' . $ipsmartplug . ' -c realtimeVoltage';
-                $result  = trim(shell_exec($command));
-                log::add('wifismartplug', 'debug', 'retour [realvoltage]');
-                log::add('wifismartplug', 'debug', $command);
-                log::add('wifismartplug', 'debug', $result);
-
-                /* decode reponse info */
-                $jsoninfo = json_decode($result, true);
-                $voltage  = $jsoninfo['emeter']['get_realtime']['voltage'];
-                $power    = $jsoninfo['emeter']['get_realtime']['power'];
-
-                log::add('wifismartplug', 'debug', 'voltage : ' . $voltage);
-                log::add('wifismartplug', 'debug', 'power : ' . $power);
+            log::add('wifismartplug','debug', 'state : '.$state );
+            log::add('wifismartplug','debug', 'mac : '.$mac );
+            log::add('wifismartplug','debug', 'alias : '.$alias );
+            log::add('wifismartplug','debug', 'runTime : '.$runtTime );
+            log::add('wifismartplug','debug', 'nightmode : '.$nightmode );
 
 
-                /* --set current power -- */
-                $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(), 'currentPower');
-                if (is_object($statecmd)) {
-                    if ($statecmd->execCmd() === null || $statecmd->execCmd() != $power) {
-                        $changed = true;
-                        $statecmd->setCollectDate('');
-                        $statecmd->event($power);
-                    }
-                }
+          /* set etat */
+          $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(),'etat');
+          if (is_object($statecmd)) {
+              if ($statecmd->execCmd() == null || $statecmd->execCmd() != $state) {
+                  $changed = true;
+                  $statecmd->setCollectDate('');
+                  $statecmd->event($state);
+              }
+          }
 
-                /* --set voltage-- */
-                $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(), 'voltage');
-                if (is_object($statecmd)) {
-                    if ($statecmd->execCmd() === null || $statecmd->execCmd() != $voltage) {
-                        $changed = true;
-                        $statecmd->setCollectDate('');
-                        $statecmd->event($voltage);
-                    }
-                }
-            }
 
-            if ($changed === true) {
-                $this->refreshWidget();
-            }
-        } catch (\Exception $e) {
-            log::add('wifismartplug', 'debug', $e);
-            return '';
-        }
-    }
+          /* set nightemod */
+          $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(),'nightmode');
+          if (is_object($statecmd)) {
+              if ($statecmd->execCmd() == null || $statecmd->execCmd() != $nightmode) {
+                  $changed = true;
+                  $statecmd->setCollectDate('');
+                  $statecmd->event($nightmode);
+              }
+          }
 
-    public function addCmdsmartplug()
-    {
+
+          /* set currentRunTime */
+          $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(),'currentRunTime');
+          if (is_object($statecmd)) {
+              if ($statecmd->execCmd() == null || $statecmd->execCmd() != $runtTime) {
+                  $changed = true;
+                  $statecmd->setCollectDate('');
+                  $statecmd->event($runtTime);
+              }
+          }
+
+
+          /* set macAddress*/
+          $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(),'macAddress');
+          if (is_object($statecmd)) {
+              if ($statecmd->execCmd() == null || $statecmd->execCmd() != $mac) {
+                  $changed = true;
+                  $statecmd->setCollectDate('');
+                  $statecmd->event($mac);
+              }
+          }
+
+          /* set alias*/
+          $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(),'alias');
+          if (is_object($statecmd)) {
+              if ($statecmd->execCmd() == null || $statecmd->execCmd() != $alias) {
+                  $changed = true;
+                  $statecmd->setCollectDate('');
+                  $statecmd->event($alias);
+              }
+          }
+
+
+          /* ajout commande pour modele HS110 */
+
+          $model = $this->getConfiguration('model');
+          if($model == 'HS110') {
+
+
+              /* -- set daily consumption --*/
+              $command = '/usr/bin/python ' .dirname(__FILE__).'/../../3rparty/smartplug.py  -t ' . $ipsmartplug . ' -c dailyConsumption';
+              $result=trim(shell_exec($command));
+              log::add('wifismartplug','debug','retour [dailyConso]');
+              log::add('wifismartplug','debug',$command);
+              log::add('wifismartplug','debug',$result);
+              $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(),'dailyConso');
+              if (is_object($statecmd)) {
+                  if ($statecmd->execCmd() == null || $statecmd->execCmd() != $retourcommand) {
+                      $changed = true;
+                      $statecmd->setCollectDate('');
+                      $statecmd->event($result);
+                  }
+              }
+
+              /* power and voltage from */
+              $command = '/usr/bin/python ' .dirname(__FILE__).'/../../3rparty/smartplug.py  -t ' . $ipsmartplug . ' -c realtimeVoltage';
+              $result=trim(shell_exec($command));
+              log::add('wifismartplug','debug','retour [realvoltage]');
+              log::add('wifismartplug','debug',$command);
+              log::add('wifismartplug','debug',$result);
+
+              /* decode reponse info */
+              $jsoninfo = json_decode($result,true);
+              $voltage =$jsoninfo['emeter']['get_realtime']['voltage'];
+              $power =$jsoninfo['emeter']['get_realtime']['power'];
+
+              log::add('wifismartplug','debug', 'voltage : '.$voltage );
+              log::add('wifismartplug','debug', 'power : '.$power );
+
+
+              /*--set current power --*/
+              $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(),'currentPower');
+              if (is_object($statecmd)) {
+                  if ($statecmd->execCmd() == null || $statecmd->execCmd() != $power) {
+                      $changed = true;
+                      $statecmd->setCollectDate('');
+                      $statecmd->event($power);
+                  }
+              }
+
+              /*--set voltage--*/
+
+              $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(),'voltage');
+              if (is_object($statecmd)) {
+                  if ($statecmd->execCmd() == null || $statecmd->execCmd() != $voltage) {
+                      $changed = true;
+                      $statecmd->setCollectDate('');
+                      $statecmd->event($voltage);
+                  }
+              }
+
+
+          }
+
+
+          if ($changed == true){
+              $this->refreshWidget();
+          }
+
+
+
+        } catch (Exception $e) {
+              log::add('wifismartplug','debug',$e);
+      return '';
+		}
+  }
+
+    public function addCmdSmartPlug() {
+
         /*   add currentRunTimeHour format hh:mm:ss */
 
         $currentRunTimeHour = $this->getCmd(null, 'currentRunTimeHour');
@@ -268,9 +285,9 @@ class wifismartplug extends eqLogic
         $alias->setEqLogic_id($this->getId());
         $alias->save();
 
-        /* -- pour HSS110 --- */
+          /* -- pour HSS110 ---*/
         $model = $this->getConfiguration('model');
-        if ($model == 'HS110') {
+        if($model == 'HS110') {
 
             /* add dailyConso */
 
@@ -286,6 +303,7 @@ class wifismartplug extends eqLogic
             $dailyconso->setEqLogic_id($this->getId());
             $dailyconso->save();
 
+
             /* current power */
 
             $currentpower = $this->getCmd(null, 'currentPower');
@@ -300,6 +318,8 @@ class wifismartplug extends eqLogic
             $currentpower->setEqLogic_id($this->getId());
             $currentpower->save();
 
+
+
             /* current voltage */
 
             $voltage = $this->getCmd(null, 'voltage');
@@ -313,33 +333,43 @@ class wifismartplug extends eqLogic
             $voltage->setSubType('numeric');
             $voltage->setEqLogic_id($this->getId());
             $voltage->save();
+
+
+
+
+
         }
+
+
+
+
+
     }
 
-    public function preInsert()
-    {
+
+    /*     * *********************Méthodes d'instance************************* */
+
+    public function preInsert() {
         $this->setCategory('energy', 1);
+
     }
 
-    /*public function postInsert()
-    {
-        
+    public function postInsert() {
+
     }
 
-    public function preSave()
-    {
-        
-    }*/
+    public function preSave() {
 
-    public function postSave()
-    {
+    }
+
+    public function postSave() {
 
         if (!$this->getId())
             return;
 
-        /* ---------------------------- */
+        /* ----------------------------*/
         /*       commande commune      */
-        /* ---------------------------- */
+        /* ----------------------------*/
 
         /* etat */
         $etat = $this->getCmd(null, 'etat');
@@ -350,13 +380,13 @@ class wifismartplug extends eqLogic
         }
         $etat->setType('info');
         $etat->setIsVisible(1);
-        $etat->setDisplay('generic_type', 'ENERGY_STATE');
+        $etat->setDisplay('generic_type','ENERGY_STATE');
         $etat->setSubType('binary');
         $etat->setEqLogic_id($this->getId());
         $etat->save();
         $etatid = $etat->getId();
 
-        /* on */
+         /* on */
         $on = $this->getCmd(null, 'on');
         if (!is_object($on)) {
             $on = new wifismartplugCmd();
@@ -365,13 +395,13 @@ class wifismartplug extends eqLogic
         }
         $on->setType('action');
         $on->setIsVisible(0);
-        $on->setDisplay('generic_type', 'ENERGY_ON');
+        $on->setDisplay('generic_type','ENERGY_ON');
         $on->setSubType('other');
         $on->setEqLogic_id($this->getId());
         $on->setValue($etatid);
         $on->save();
 
-        /* off */
+         /* off */
         $off = $this->getCmd(null, 'off');
         if (!is_object($off)) {
             $off = new wifismartplugCmd();
@@ -380,7 +410,7 @@ class wifismartplug extends eqLogic
         }
         $off->setType('action');
         $off->setIsVisible(0);
-        $off->setDisplay('generic_type', 'ENERGY_OFF');
+        $off->setDisplay('generic_type','ENERGY_OFF');
         $off->setSubType('other');
         $off->setEqLogic_id($this->getId());
         $off->setValue($etatid);
@@ -395,7 +425,7 @@ class wifismartplug extends eqLogic
         }
         $nightmode->setType('info');
         $nightmode->setIsVisible(1);
-        $nightmode->setDisplay('generic_type', 'ENERGY_STATE');
+        $nightmode->setDisplay('generic_type','ENERGY_STATE');
         $nightmode->setSubType('binary');
         $nightmode->setEqLogic_id($this->getId());
         $nightmode->save();
@@ -410,7 +440,7 @@ class wifismartplug extends eqLogic
         }
         $nightmodeon->setType('action');
         $nightmodeon->setIsVisible(0);
-        $nightmodeon->setDisplay('generic_type', 'ENERGY_ON');
+        $nightmodeon->setDisplay('generic_type','ENERGY_ON');
         $nightmodeon->setSubType('other');
         $nightmodeon->setEqLogic_id($this->getId());
         $nightmodeon->setValue($nightmodeid);
@@ -425,7 +455,7 @@ class wifismartplug extends eqLogic
         }
         $nightmodeoff->setType('action');
         $nightmodeoff->setIsVisible(0);
-        $nightmodeoff->setDisplay('generic_type', 'ENERGY_OFF');
+        $nightmodeoff->setDisplay('generic_type','ENERGY_OFF');
         $nightmodeoff->setSubType('other');
         $nightmodeoff->setEqLogic_id($this->getId());
         $nightmodeoff->setValue($nightmodeid);
@@ -444,91 +474,100 @@ class wifismartplug extends eqLogic
         $refresh->setEqLogic_id($this->getId());
         $refresh->save();
 
-        /* a faire tester le constructeur pour appeler la methode d'ajout de commande 
-          spécifique en fonction constructeur et modéle
+
+        /* a faire tester le constructeur pour appeler la methode d'ajout de commande
+         spécifique en fonction constructeur et modéle
          */
 
-        $this->addCmdsmartplug();
-    }
+        $this->addCmdSmartPlug();
+
+           }
 
     /* test @ip */
 
-    public function testIp()
-    {
+    public function testIp(){
 
         // test if @IP exist
-        $host  = $this->getConfiguration('addr');
-        log::add('wifismartplug', 'debug', $host);
-        $fsock = fsockopen($host, '9999', $errno, $errstr, 10);
-        if (!$fsock) {
+        $host =  $this->getConfiguration('addr');
+        log::add('wifismartplug', 'debug',$host );
+        $fsock = fsockopen($host, '9999', $errno, $errstr, 10   );
+        if (! $fsock )
+        {
             fclose($fsock);
-            log::add('wifismartplug', 'debug', 'Communication error check @IP :' . $host);
-            throw new \Exception(__('Communication error check @IP ', __FILE__));
+             log::add('wifismartplug', 'debug','Communication error check @IP :'. $host );
+            throw new Exception(__('Communication error check @IP ',__FILE__));
+
         }
         fclose($fsock);
+
+
     }
 
-    public function preUpdate()
-    {
-        $this->testIp();
+    public function preUpdate() {
+         $this->testIp();
+                   }
+
+    public function postUpdate() {
+
     }
 
-    /*public function postUpdate()
-    {
-        
+    public function preRemove() {
+
     }
 
-    public function preRemove()
-    {
-        
+    public function postRemove() {
+
     }
 
-    public function postRemove()
-    {
-        
-    }*/
-
-    public function postAjax()
-    {
+    public function postAjax() {
         $this->cron($this->getId());
     }
 
     /*
      * Non obligatoire mais permet de modifier l'affichage du widget si vous en avez besoin */
 
-    public function toHtml($_version = 'dashboard')
-    {
-        $replace = $this->preToHtml($_version);
-        if (!is_array($replace)) {
-            return $replace;
-        }
+      public function toHtml($_version = 'dashboard') {
+          $replace = $this->preToHtml($_version);
+          if (!is_array($replace)) {
+              return $replace;
+          }
 
-        $version = jeedom::versionAlias($_version);
-        if ($this->getDisplay('hideOn' . $version) == 1) {
-            return '';
-        }
+          $version = jeedom::versionAlias($_version);
+          if ($this->getDisplay('hideOn' . $version) == 1) {
+              return '';
+          }
 
-        foreach ($this->getCmd() as $cmd) {
-            if ($cmd->getType() == 'info') {
-                $replace['#' . $cmd->getLogicalId() . '_history#']     = '';
-                $replace['#' . $cmd->getLogicalId() . '#']             = $cmd->execCmd();
-                $replace['#' . $cmd->getLogicalId() . '_id#']          = $cmd->getId();
-                $replace['#' . $cmd->getLogicalId() . '_collectDate#'] = $cmd->getCollectDate();
-                if ($cmd->getIsHistorized() == 1) {
-                    $replace['#' . $cmd->getLogicalId() . '_history#'] = 'history cursor';
-                }
-            } else {
-                $replace['#' . $cmd->getLogicalId() . '_id#'] = $cmd->getId();
-            }
-        }
+          foreach ($this->getCmd() as $cmd) {
+              if ($cmd->getType() == 'info') {
+                  $replace['#' . $cmd->getLogicalId() . '_history#'] = '';
+                  $replace['#' . $cmd->getLogicalId() . '#'] = $cmd->execCmd();
+                  $replace['#' . $cmd->getLogicalId() . '_id#'] = $cmd->getId();
+                  $replace['#' . $cmd->getLogicalId() . '_collectDate#'] = $cmd->getCollectDate();
+                  if ($cmd->getIsHistorized() == 1) {
+                      $replace['#' . $cmd->getLogicalId() . '_history#'] = 'history cursor';
+                  }
+              } else {
+                  $replace['#' . $cmd->getLogicalId() . '_id#'] = $cmd->getId();
+              }
+          }
 
-        return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, $this->getConfiguration('model'), 'wifismartplug')));
-    }
+          return $this->postToHtml($_version, template_replace($replace, getTemplate('core', $version, $this->getConfiguration('model'), 'wifismartplug')));
 
+
+      }
+
+
+    /*     * **********************Getteur Setteur*************************** */
 }
 
-class wifismartplugCmd extends cmd
-{
+class wifismartplugCmd extends cmd {
+    /*     * *************************Attributs****************************** */
+
+
+    /*     * ***********************Methode static*************************** */
+
+
+    /*     * *********************Methode d'instance************************* */
 
     /*
      * Non obligatoire permet de demander de ne pas supprimer les commandes même si elles ne sont pas dans la nouvelle configuration de l'équipement envoyé en JS
@@ -537,67 +576,70 @@ class wifismartplugCmd extends cmd
       }
      */
 
-    public function execute($_options = array())
-    {
+    public function execute($_options = array()) {
 
         if ($this->getType() == '') {
             return '';
         }
 
-        $action      = $this->getLogicalId();
-        $eqLogic     = $this->getEqlogic();
+        $action= $this->getLogicalId();
+        $eqLogic = $this->getEqlogic();
         $ipsmartplug = $eqLogic->getConfiguration('addr');
 
-        log::add('wifismartplug', 'debug', 'action' . $action);
-        log::add('wifismartplug', 'debug', $eqLogic);
+          log::add('wifismartplug', 'debug','action'. $action );
+        log::add('wifismartplug', 'debug', $eqLogic );
 
         if ($action == 'refresh') {
             $eqLogic->cron($eqLogic->getId());
-            log::add('wifismartplug', 'debug', 'REFRESH !!!');
+             log::add('wifismartplug','debug','REFRESH !!!');
         }
 
         /*  a modifier par la suite pour prendre en compte different constructeur */
 
-        /* set  : on */
+         /* set  : on */
         if ($action == 'on') {
-            $command = '/usr/bin/python ' . dirname(__FILE__) . '/../../3rparty/smartplug.py  -t ' . $ipsmartplug . ' -c on';
-            $result  = trim(shell_exec($command));
-            log::add('wifismartplug', 'debug', 'action on');
-            log::add('wifismartplug', 'debug', $command);
-            log::add('wifismartplug', 'debug', $result);
+            $command = '/usr/bin/python ' .dirname(__FILE__).'/../../3rparty/smartplug.py  -t '  . $ipsmartplug . ' -c on';
+           $result=trim(shell_exec($command));
+            log::add('wifismartplug','debug','action on');
+            log::add('wifismartplug','debug',$command);
+            log::add('wifismartplug','debug',$result);
             $eqLogic->cron($eqLogic->getId());
         }
 
-        /* set  : off */
+                /* set  : off */
         if ($action == 'off') {
-            $command = '/usr/bin/python ' . dirname(__FILE__) . '/../../3rparty/smartplug.py  -t ' . $ipsmartplug . ' -c off';
-            $result  = trim(shell_exec($command));
-            log::add('wifismartplug', 'debug', 'action off');
-            log::add('wifismartplug', 'debug', $command);
-            log::add('wifismartplug', 'debug', $result);
+            $command = '/usr/bin/python ' .dirname(__FILE__).'/../../3rparty/smartplug.py  -t '  . $ipsmartplug . ' -c off';
+            $result=trim(shell_exec($command));
+            log::add('wifismartplug','debug','action off');
+            log::add('wifismartplug','debug',$command);
+            log::add('wifismartplug','debug',$result);
             $eqLogic->cron($eqLogic->getId());
         }
 
         /* set  : nightmodeon */
         if ($action == 'nightmodeon') {
-            $command = '/usr/bin/python ' . dirname(__FILE__) . '/../../3rparty/smartplug.py  -t ' . $ipsmartplug . ' -c nightModeOn';
-            $result  = trim(shell_exec($command));
-            log::add('wifismartplug', 'debug', 'action nightModeOn');
-            log::add('wifismartplug', 'debug', $command);
-            log::add('wifismartplug', 'debug', $result);
+            $command = '/usr/bin/python ' .dirname(__FILE__).'/../../3rparty/smartplug.py  -t '  . $ipsmartplug . ' -c nightModeOn';
+            $result=trim(shell_exec($command));
+            log::add('wifismartplug','debug','action nightModeOn');
+            log::add('wifismartplug','debug',$command);
+            log::add('wifismartplug','debug',$result);
             $eqLogic->cron($eqLogic->getId());
         }
 
         /* set  : nightmodeoff */
         if ($action == 'nightmodeoff') {
-            $command = '/usr/bin/python ' . dirname(__FILE__) . '/../../3rparty/smartplug.py  -t ' . $ipsmartplug . ' -c nightModeOff';
-            $result  = trim(shell_exec($command));
-            log::add('wifismartplug', 'debug', 'action nightModeOff');
-            log::add('wifismartplug', 'debug', $command);
-            log::add('wifismartplug', 'debug', $result);
+            $command = '/usr/bin/python ' .dirname(__FILE__).'/../../3rparty/smartplug.py  -t '  . $ipsmartplug . ' -c nightModeOff';
+             $result=trim(shell_exec($command));
+            log::add('wifismartplug','debug','action nightModeOff');
+            log::add('wifismartplug','debug',$command);
+            log::add('wifismartplug','debug',$result);
             $eqLogic->cron($eqLogic->getId());
         }
+
+
     }
 
+    /*     * **********************Getteur Setteur*************************** */
 }
 
+?>
