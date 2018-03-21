@@ -4,7 +4,7 @@
     "description" : "Plugin pour controller les équipements smartplug wifi TpLink",
     "licence" : "AGPL",
     "author" : "bobeponge14",
-    "require" : "2.4",
+    "require" : "3.0",
     "category" : "energy"
     "changelog" : "https://jeedom.github.io/plugin-Wifi-Smartplug/#language#/changelog"
     "documentation" : "https://jeedom.github.io/plugin-Wifi-Smartplug/#language#/"
