@@ -47,9 +47,9 @@
         echo '<div class="eqLogicDisplayCard cursor" data-eqLogic_id="' . $eqLogic->getId() . '" style="background-color : #ffffff; height : 200px;margin-bottom : 10px;padding : 5px;border-radius: 2px;width : 160px;margin-left : 10px;' . $opacity . '" >';
         echo "<center>";
         if ($eqLogic->getConfiguration('model', '') != '') {
-            echo '<img src="plugins/wifismartplug/doc/images/' . $eqLogic->getConfiguration('model', '') . '.jpg" height="105" width="105" />';
+            echo '<img src="plugins/wifismartplug/docs/images/' . $eqLogic->getConfiguration('model', '') . '.jpg" height="105" width="105" />';
         } else {
-            echo '<img src="plugins/wifismartplug/doc/images/HS100.jpg" height="105" width="105" />';
+            echo '<img src="plugins/wifismartplug/docs/images/HS100.jpg" height="105" width="105" />';
         }
         echo "</center>";
         echo '<span style="font-size : 1.1em;position:relative; top : 15px;word-break: break-all;white-space: pre-wrap;word-wrap: break-word;"><center>' . $eqLogic->getHumanName(true, true) . '</center></span>';
