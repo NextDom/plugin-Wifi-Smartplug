@@ -21,7 +21,7 @@ $('#bt_healthsmartplug').on('click', function () {
                          });
 
 $('.eqLogicAttr[data-l1key=configuration][data-l2key=model]').on('change',function(){
-                                                                 $('#img_mpowerModel').attr('src','plugins/wifismartplug/doc/images/'+$(this).value()+'.jpg');
+                                                                 $('#img_mpowerModel').attr('src','plugins/wifismartplug/docs/images/'+$(this).value()+'.jpg');
                                                                  });
 $("#table_cmd").sortable({axis: "y", cursor: "move", items: ".cmd", placeholder: "ui-state-highlight", tolerance: "intersect", forcePlaceholderSize: true});
 function addCmdToTable(_cmd) {
