@@ -166,7 +166,7 @@ class wifismartplug extends eqLogic {
               log::add('wifismartplug','debug',$result);
               $statecmd = wifismartplugCmd::byEqLogicIdAndLogicalId($this->getId(),'dailyConso');
               if (is_object($statecmd)) {
-                  if ($statecmd->execCmd() == null || $statecmd->execCmd() != $retourcommand) {
+                  if ($statecmd->execCmd() == null || $statecmd->execCmd() != $result) {
                       $changed = true;
                       $statecmd->setCollectDate('');
                       $statecmd->event($result);
