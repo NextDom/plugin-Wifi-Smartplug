@@ -54,9 +54,9 @@ foreach ($eqLogics as $eqLogic) {
         $opacity = 'opacity:0.3;';
     }
     if ($eqLogic->getConfiguration('model', '') != '') {
-        $image = '<img src="plugins/wifismartplug/doc/images/' . $eqLogic->getConfiguration('model', '') . '.jpg" height="55" width="55" />';
+        $image = '<img src="plugins/wifismartplug/docs/images/' . $eqLogic->getConfiguration('model', '') . '.jpg" height="55" width="55" />';
     } else {
-        $image = '<img src="plugins/mpower/doc/images/mpower_icon.png" height="55" width="55" />';
+        $image = '<img src="plugins/mpower/docs/images/mpower_icon.png" height="55" width="55" />';
     }
 echo '<tr><td>' . $image . '</td><td><a href="' . $eqLogic->getLinkToConfiguration() . '" style="text-decoration: none;">' . $eqLogic->getHumanName(true) . '</a></td>';
 echo '<td><span class="label label-info" style="font-size : 1em;">' . $eqLogic->getId() . '</span></td>';
